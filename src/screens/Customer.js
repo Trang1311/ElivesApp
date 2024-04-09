@@ -8,16 +8,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import auth from '@react-native-firebase/auth';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import FavoritesScreen from './FavoritesScreen';
+import User from './User';
+import Tracking from './Tracking';
+import BottomTabBar from './BottomTabBar';
+const Tab = createBottomTabNavigator();
 
 const getCurrentUser = () => {
   return auth().currentUser;
 };
 
-const Customer = () => {
+const HomeScreen = ({ navigation }) => {
   const [services, setServices] = useState([]);
   const [filteredServices, setFilteredServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const navigation = useNavigation();
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
   const [favorites, setFavorites] = useState([]);
@@ -57,14 +62,6 @@ const Customer = () => {
       (item) => item.name.toLowerCase().includes(term.toLowerCase())
     );
     setFilteredServices(filteredList);
-  };
-
-  const navigateToUser = () => {
-    navigation.navigate('User');
-  };
-
-  const navigateToTracking = () => {
-    navigation.navigate('Tracking');
   };
 
   const addToCart = (service) => {
@@ -177,7 +174,7 @@ const Customer = () => {
                 style={styles.addToCartButton}
                 onPress={() => addToCart(item)}
               >
-                <FontAwesome name="shopping-cart" size={20} color="blue" />
+                <FontAwesome name="shopping-cart" size={20} color="#ff66b2" />
               </TouchableOpacity>
                     </View>
                   </View>
@@ -187,23 +184,57 @@ const Customer = () => {
             </TouchableOpacity>
           )}
         />
-
-        <View style={styles.footer}>
-          <TouchableOpacity style={[styles.button, styles.BookingButton]} onPress={navigateToTracking}>
-            <Icon name="list" size={28} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={navigateToUser}>
-            <Icon name="user" size={28} color="white" />
-            <TouchableOpacity style={[styles.button, styles.HeartButton]} onPress={navigateToTracking}>
-          <Icon name="heart" size={28} color="white" />
-        </TouchableOpacity>
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     </ImageBackground>
   );
 };
 
+
+const Customer = () => {
+  return (
+    <Tab.Navigator
+      tabBar={(props) => <BottomTabBar {...props} />}
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#ff66b2',
+        },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    >
+      <Tab.Screen
+        name="Trang chủ"
+        component={HomeScreen}
+        options={{
+          iconName: 'home',
+        }}
+      />
+      <Tab.Screen
+        name="Yêu thích"
+        component={FavoritesScreen}
+        options={{
+          iconName: 'heart',
+        }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={Tracking}
+        options={{
+          iconName: 'list',
+        }}
+      />
+      <Tab.Screen
+        name="Thông tin Người dùng"
+        component={User}
+        options={{
+          iconName: 'person',
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -218,16 +249,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
     color: 'white',
-  },
-  BookingButton: {
-    position: 'absolute',
-    bottom: 4,
-    marginLeft: 340,
-  },
-  HeartButton: {
-    position: 'absolute',
-    bottom: -12,
-    marginLeft: 150,
   },
   title1: {
     fontSize: 25,
@@ -274,11 +295,6 @@ const styles = StyleSheet.create({
   },
   serviceDescription: {
     color: '#666',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
   },
   button: {
     width: 50,

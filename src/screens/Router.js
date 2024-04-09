@@ -21,6 +21,7 @@ import QRPay from './QRPay';
 import SignUp from './SignUp';
 import ForgetPass from './ForgetPass';
 //import AdminChat from './AdminChat';
+import FavoritesScreen from './FavoritesScreen';
 
 const Stack = createStackNavigator();
  export default Router =()=>{
@@ -43,7 +44,8 @@ const Stack = createStackNavigator();
             <Stack.Screen name='Tracking' component={Tracking}/>
             <Stack.Screen name='SignUp' component={SignUp}/>
             <Stack.Screen name='Forget' component={ForgetPass}/>
-            
+            <Stack.Screen name='FavoritesScreen' component={FavoritesScreen}/>
+
             <Stack.Screen name="Booking" component={Booking}
                 options={{
                     headerStyle: {backgroundColor:"pink"},
