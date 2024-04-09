@@ -10,8 +10,6 @@ const Chat = ({ route }) => {
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
 
-//hihii
-//Chos Mai
   useEffect(() => {
     const unsubscribe = firestore()
       .collection('services')
