@@ -9,7 +9,7 @@ const Chat = ({ route }) => {
   const [messages, setMessages] = useState([]);
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
-
+// chos trang
   useEffect(() => {
     const unsubscribe = firestore()
       .collection('services')
