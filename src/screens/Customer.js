@@ -5,6 +5,13 @@ import firestore from '@react-native-firebase/firestore';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
 import { useMyContextController } from '../context';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import auth from '@react-native-firebase/auth';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+
+const getCurrentUser = () => {
+  return auth().currentUser;
+};
 
 const Customer = () => {
   const [services, setServices] = useState([]);
@@ -13,6 +20,7 @@ const Customer = () => {
   const navigation = useNavigation();
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     // Truy vấn danh sách dịch vụ từ Firestore
@@ -30,8 +38,18 @@ const Customer = () => {
         filterServices(searchTerm, servicesList);
       });
 
-    // Hủy đăng ký lắng nghe khi component bị hủy
-    return () => unsubscribe();
+      const unsubscribeFavorites = firestore()
+      .collection('USERS')
+      .doc(getCurrentUser()?.email)
+      .onSnapshot((doc) => {
+        const userFavorites = doc.data()?.favorites || [];
+        setFavorites(userFavorites);
+      });
+
+    return () => {
+      unsubscribe();
+      unsubscribeFavorites();
+    };
   }, [searchTerm]);
 
   const filterServices = (term, servicesList) => {
@@ -47,6 +65,71 @@ const Customer = () => {
 
   const navigateToTracking = () => {
     navigation.navigate('Tracking');
+  };
+
+  const addToCart = (service) => {
+    if (!selectedServices.some((selectedService) => selectedService.id === service.id)) {
+      setSelectedServices([...selectedServices, service]);
+      Alert.alert('Thành công', 'Dịch vụ đã được thêm vào giỏ hàng');
+    } else {
+      Alert.alert('Thông báo', 'Dịch vụ đã tồn tại trong giỏ hàng.');
+    }
+  };
+
+  const navigateToCartScreen = () => {
+    navigation.navigate('CartScreen', {
+      selectedServices,
+      setSelectedServices: setSelectedServices,
+      reloadCart: reloadCartScreen,
+      forceUpdateCart: forceUpdate,
+    });
+  };
+
+  const reloadCartScreen = () => {
+    setForceUpdate((prev) => !prev);
+  };
+
+  const isServiceFavorite = (service) => {
+    return favorites.some((fav) => fav.id === service.id);
+  };
+
+  const toggleFavorite = async (service) => {
+    const user = getCurrentUser();
+    if (!user) {
+      return;
+    }
+
+    const userEmail = user.email;
+
+    if (!userEmail) {
+      console.error('Email not found for the current user.');
+      return;
+    }
+
+    const userDocRef = firestore().collection('USERS').doc(userEmail);
+
+    try {
+      const userDoc = await userDocRef.get();
+
+      if (!userDoc.exists) {
+        await userDocRef.set({ favorites: [] });
+      }
+
+      const updatedUserDoc = await userDocRef.get();
+      const updatedFavorites = updatedUserDoc.data()?.favorites || [];
+
+      if (isServiceFavorite(service)) {
+        const updatedFavorites = favorites.filter((fav) => fav.id !== service.id);
+        console.log('Updated Favorites:', updatedFavorites);
+        await userDocRef.update({ favorites: updatedFavorites });
+      } else {
+        const updatedFavorites = [...favorites, service];
+        console.log('Updated Favorites:', updatedFavorites);
+        await userDocRef.update({ favorites: updatedFavorites });
+      }
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+    }
   };
 
   return (
@@ -80,12 +163,22 @@ const Customer = () => {
                   <View style={styles.itemHeader}>
                     <Text style={styles.serviceName}>{item.name}</Text>
                     <View style={styles.iconContainer}>
-                      <TouchableOpacity>
-                        <Icon name="heart" size={20} color="red" style={styles.icon} />
-                      </TouchableOpacity>
-                      <TouchableOpacity>
-                        <Icon name="shopping-cart" size={20} color="blue" style={styles.icon} />
-                      </TouchableOpacity>
+                    <TouchableOpacity
+                style={styles.favoriteIcon}
+                onPress={() => toggleFavorite(item)}
+              >
+                <Ionicons
+                  name={isServiceFavorite(item) ? 'heart' : 'heart-outline'}
+                  size={21}
+                  color="red"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.addToCartButton}
+                onPress={() => addToCart(item)}
+              >
+                <FontAwesome name="shopping-cart" size={20} color="blue" />
+              </TouchableOpacity>
                     </View>
                   </View>
                   <Text style={styles.serviceDescription}>{item.description}</Text>
