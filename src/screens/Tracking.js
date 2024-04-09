@@ -76,7 +76,42 @@ const Tracking = () => {
   };
 
   return (  
-
+    <ImageBackground
+      source={require('../images/dark2.jpg')}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Đơn hàng của bạn:</Text>
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.orderContainer}>
+              <View style={styles.orderHeader}>
+                <Text style={styles.serviceName}>{` ${item.serviceName}`}</Text>
+                {item.status === 'Đang chờ xác nhận' || item.status === 'Đang chuẩn bị hàng' ? (
+                  <TouchableOpacity onPress={() => cancelOrder(item.id)}>
+                    <Icon name="times" size={20} color="red" style={styles.cancelIcon} />
+                  </TouchableOpacity>
+                ) : (
+                  <Icon name="times" size={20} color="#666" style={styles.cancelIcon} />
+                )}
+              </View>
+              <Text style={styles.status}>{`Ngày đặt: ${item.orderDate}`}</Text>
+              <Text style={styles.status}>{`Ngày giao: ${item.selectedDate}`}</Text>
+              <Text style={styles.status}>{`Trạng thái: ${item.status}`}</Text>
+            </View>
+          )}
+        />
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.userButton} onPress={navigateToUser}>
+            <Icon name="user" size={20} color="#ff66b2" /> 
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.BookingButton} onPress={navigateToCustomer}>
+            <Icon name="list" size={20} color="#ff66b2" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </ImageBackground>
   );
 };
