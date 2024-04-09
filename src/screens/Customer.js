@@ -74,14 +74,27 @@ const Customer = () => {
               style={styles.serviceItem}
               onPress={() => navigation.navigate('ServiceDetail', { userLogin, service: item })}
             >
-              <View style={styles.serviceHeader}>
-                <Text style={styles.serviceName}>{item.name}</Text>
-                {item.image && <Image source={{ uri: item.image }} style={styles.serviceImage} />}
+              <View style={styles.itemContainer}>
+                <Image source={{ uri: item.image }} style={styles.serviceImage} />
+                <View style={styles.itemDetails}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.serviceName}>{item.name}</Text>
+                    <View style={styles.iconContainer}>
+                      <TouchableOpacity>
+                        <Icon name="heart" size={20} color="red" style={styles.icon} />
+                      </TouchableOpacity>
+                      <TouchableOpacity>
+                        <Icon name="shopping-cart" size={20} color="blue" style={styles.icon} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <Text style={styles.serviceDescription}>{item.description}</Text>
+                </View>
               </View>
-              <Text style={styles.serviceDescription}>{item.description}</Text>
             </TouchableOpacity>
           )}
         />
+
         <View style={styles.footer}>
           <TouchableOpacity style={[styles.button, styles.BookingButton]} onPress={navigateToTracking}>
             <Icon name="list" size={28} color="white" />
@@ -155,17 +168,16 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   serviceName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#ff66b2',
+    flex: 1,
   },
   serviceImage: {
-    width: 50,
-    height: 40,
-    borderRadius: 0,
-    position: 'absolute',
-    top: 0,
-    right: 0,
+    width: 80,
+    height: 80,
+    marginRight: 8,
+    borderRadius: 8,
   },
   serviceDescription: {
     color: '#666',
@@ -181,6 +193,25 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  itemDetails: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    flexDirection: 'row',
+  },
+  icon: {
+    marginLeft: 8,
   },
 });
 
