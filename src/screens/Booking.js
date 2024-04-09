@@ -24,6 +24,7 @@ const Booking = ({ route }) => {
       const currentDate = new Date();
       const bookingData = {
         serviceName: service.name,
+        
         userName: userLogin.name,
         userEmail: userLogin.email,
         orderDate: currentDate.toISOString(),
