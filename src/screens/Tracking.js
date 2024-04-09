@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ImageBackground, Alert } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../context';
 import { useNavigation } from '@react-navigation/native';
@@ -14,11 +14,12 @@ const Tracking = () => {
   const navigateToUser = () => {
     navigation.navigate('User');
   };
+  
   const navigateToCustomer = () => {
     navigation.navigate('Customer');
   };
+
   useEffect(() => {
-    // Load user's orders from Firestore
     const unsubscribe = firestore()
       .collection('bookings')
       .where('userEmail', '==', userLogin.email)
@@ -28,7 +29,6 @@ const Tracking = () => {
           const userOrders = [];
           querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // Check if the document has an "orderDate" field and it's not null
             if (data && data.orderDate) {
               userOrders.push({
                 id: doc.id,
@@ -36,7 +36,7 @@ const Tracking = () => {
               });
             }
           });
-          setOrders(userOrders);
+          setOrders(userOrders); // Cập nhật dữ liệu sau khi lặp xong
         } else {
           console.log("querySnapshot is null");
         }
@@ -45,37 +45,73 @@ const Tracking = () => {
     return () => unsubscribe(); // Cleanup subscription on unmount
   }, [userLogin]);
   
+  
+  const cancelOrder = (orderId) => {
+    Alert.alert(
+      'Xác nhận xóa',
+      'Bạn chắc chắn muốn xóa đơn hàng không?',
+      [
+        {
+          text: 'Hủy',
+          style: 'cancel',
+        },
+        {
+          text: 'Xóa',
+          onPress: () => {
+            handleDeleteOrder(orderId);
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await firestore().collection('bookings').doc(orderId).delete();
+      console.log('Đơn hàng đã được xóa thành công.');
+    } catch (error) {
+      console.error('Lỗi khi xóa đơn hàng:', error);
+    }
+  };
 
   return (  
-  <ImageBackground
-    source={require('../images/dark2.jpg')} // Replace with the actual path or URL
-    style={styles.backgroundImage}
-  >
-    <View style={styles.container}>
-    
-      <Text style={styles.title}>Đơn hàng của bạn:</Text>
-      <FlatList
-        data={orders}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.orderContainer}>
-            <Text style={styles.serviceName}>{` ${item.serviceName}`}</Text>
-            <Text style={styles.status}>{`Ngày đặt: ${item.orderDate}`}</Text>
-            <Text style={styles.status}>{`Ngày giao: ${item.selectedDate}`}</Text>
-            <Text style={styles.status}>{`Trạng thái: ${item.status}`}</Text>
-            {/* Add more details as needed */}
-          </View>
-        )}
-      />
-      <View style={styles.footer}>
-      <TouchableOpacity style={styles.userButton} onPress={navigateToUser}>
-        <Icon name="user" size={20} color="#ff66b2" /> 
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.BookingButton} onPress={navigateToCustomer}>
-        <Icon name="list" size={20} color="#ff66b2" />
-      </TouchableOpacity>
+    <ImageBackground
+      source={require('../images/dark2.jpg')}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.container}>
+        <Text style={styles.title}>Đơn hàng của bạn:</Text>
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.orderContainer}>
+              <View style={styles.orderHeader}>
+                <Text style={styles.serviceName}>{` ${item.serviceName}`}</Text>
+                {item.status === 'Đang chờ xác nhận' || item.status === 'Đang chuẩn bị hàng' ? (
+                  <TouchableOpacity onPress={() => cancelOrder(item.id)}>
+                    <Icon name="times" size={20} color="red" style={styles.cancelIcon} />
+                  </TouchableOpacity>
+                ) : (
+                  <Icon name="times" size={20} color="#666" style={styles.cancelIcon} />
+                )}
+              </View>
+              <Text style={styles.status}>{`Ngày đặt: ${item.orderDate}`}</Text>
+              <Text style={styles.status}>{`Ngày giao: ${item.selectedDate}`}</Text>
+              <Text style={styles.status}>{`Trạng thái: ${item.status}`}</Text>
+            </View>
+          )}
+        />
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.userButton} onPress={navigateToUser}>
+            <Icon name="user" size={20} color="#ff66b2" /> 
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.BookingButton} onPress={navigateToCustomer}>
+            <Icon name="list" size={20} color="#ff66b2" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
     </ImageBackground>
   );
 };
@@ -84,12 +120,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    //backgroundImage: '../src/images/e8e0c7d44329a2fa9b48407d52ae3f90.jpg',
-
   },
   backgroundImage: {
     flex: 1,
-    resizeMode: 'cover', // or 'stretch' or 'contain'
+    resizeMode: 'cover',
   },
   BookingButton: {
     position: 'absolute',
@@ -97,7 +131,7 @@ const styles = StyleSheet.create({
     marginLeft: 315,
     width: 50,
     height: 50,
-    backgroundColor: 'white', // Màu hồng cho nút list
+    backgroundColor: 'white',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
@@ -113,38 +147,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  userButtonText: {
-    color: '#ff66b2',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 30,
-    //backgroundImage: 'Lab5/Lab5/src/images/e8e0c7d44329a2fa9b48407d52ae3f90.jpg',
-
-  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: 'white', // White text color
+    color: 'white',
     marginBottom: 16,
   },
   orderContainer: {
-    backgroundColor: 'white', // White background for each order
+    backgroundColor: 'white',
     padding: 16,
     marginBottom: 16,
     borderRadius: 8,
   },
+  orderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   serviceName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#ff66b2', // Pink text color
+    color: '#ff66b2',
   },
   status: {
     fontSize: 16,
-    color: '#333', // Dark gray text color
+    color: '#333',
+  },
+  cancelIcon: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
 });
 
