@@ -10,11 +10,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FavoritesScreen from './FavoritesScreen';
-//import ChatScreen from './ChatScreen';
 import User from './User';
-import BottomTabBar from './BottomTabBar';
 import Tracking from './Tracking';
-
+import BottomTabBar from './BottomTabBar';
 const Tab = createBottomTabNavigator();
 
 const getCurrentUser = () => {
