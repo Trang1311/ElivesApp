@@ -11,6 +11,7 @@ const Chat = ({ route }) => {
   const { userLogin } = controller;
 // chos trang
 //hihii
+//Chos Mai
   useEffect(() => {
     const unsubscribe = firestore()
       .collection('services')
