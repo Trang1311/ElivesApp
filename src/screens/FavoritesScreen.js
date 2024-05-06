@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
+import { useMyContextController } from '../context';
 import auth from '@react-native-firebase/auth';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -16,6 +17,8 @@ const FavoritesScreen = () => {
   const [favoriteServices, setFavoriteServices] = useState([]);
   const [updateFlag, setUpdateFlag] = useState(false);
   const [selectedServices, setSelectedServices] = useState([]);
+  const [controller, dispatch] = useMyContextController();
+  const { userLogin } = controller;
 
   useEffect(() => {
     const fetchFavoriteServices = async () => {
