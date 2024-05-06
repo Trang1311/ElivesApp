@@ -103,14 +103,6 @@ const Tracking = () => {
             </View>
           )}
         />
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.userButton} onPress={navigateToUser}>
-            <Icon name="user" size={20} color="#ff66b2" /> 
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.BookingButton} onPress={navigateToCustomer}>
-            <Icon name="list" size={20} color="#ff66b2" />
-          </TouchableOpacity>
-        </View>
       </View>
     </ImageBackground>
   );

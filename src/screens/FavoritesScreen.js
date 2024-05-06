@@ -1,6 +1,6 @@
 // FavoritesScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity,ImageBackground, Image, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import firestore from '@react-native-firebase/firestore';
 import { useMyContextController } from '../context';
@@ -104,6 +104,10 @@ const FavoritesScreen = () => {
   };
 
   return (
+    <ImageBackground
+      source={require('../images/dark2.jpg')}
+      style={styles.backgroundImage}
+    >
     <View style={styles.container}>
       {favoriteServices.length === 0 ? (
         <Text style={styles.emptyCartMessage}>Danh sách Yêu thích của bạn hiện đang trống.</Text>
@@ -148,6 +152,7 @@ const FavoritesScreen = () => {
         />
       )}
     </View>
+    </ImageBackground>
   );
 };
 
@@ -155,6 +160,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
   },
   serviceItem: {
     marginBottom: 12,
