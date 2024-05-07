@@ -66,6 +66,15 @@ export default Login = ({ navigation }) => {
           style={{ position: 'absolute', top: 305, right: 10 }} // Điều chỉnh vị trí của IconButton
           onPress={() => setShowPassword(!showPassword)}
         />
+        <Button
+        mode="contained-tonal"
+        onPress={onSubmit}
+        style={{ margin: 10, padding: 8 ,backgroundColor: 'white'}}
+        labelStyle={{ fontSize: 20, color: "#ff66b2" }}
+        theme={{ colors: { primary: "white" } }}
+      >
+        Đăng Nhập
+      </Button>
       <Button
         mode="contained-tonal"
         onPress={() => navigation.navigate("SignUp")}
@@ -74,15 +83,6 @@ export default Login = ({ navigation }) => {
         theme={{ colors: { primary: "#ff66b2" } }}
       >
         Đăng Ký
-      </Button>
-      <Button
-        mode="contained-tonal"
-        onPress={onSubmit}
-        style={{ margin: 10, padding: 8 ,backgroundColor: 'white'}}
-        labelStyle={{ fontSize: 20, color: "#ff66b2" }}
-        theme={{ colors: { primary: "white" } }}
-      >
-        Đăng Nhập
       </Button>
       <TouchableOpacity onPress={navigateToForgetPassword}>
           <Text style={{ textAlign: 'center', margin: 10, color: 'white' }}>
