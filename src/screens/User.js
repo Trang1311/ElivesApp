@@ -44,17 +44,18 @@ const User = () => {
               <Text style={styles.userInfo}>Địa chỉ: {userLogin.address}</Text>
             </>
           )}
-        </View>
-        <ImageBackground
-          source={require('../images/dark2.jpg')} // Replace with your actual logout button image
-          style={styles.logoutButton}
-        >
-        <TouchableOpacity
+          <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
         >
           <Text style={styles.buttonText}>Đăng Xuất</Text>
         </TouchableOpacity>
+        </View>
+        <ImageBackground
+          source={require('../images/dark2.jpg')} // Replace with your actual logout button image
+          style={styles.logoutButton}
+        >
+        
         </ImageBackground>
       </View>
     </ImageBackground>
@@ -115,13 +116,13 @@ const styles = StyleSheet.create({
     //backgroundColor: '#ff66b2',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 60,
     top: -20,
   },
   buttonText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#ff66b2',
     top:10
   },
 });
