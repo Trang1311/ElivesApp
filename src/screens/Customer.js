@@ -26,6 +26,7 @@ const HomeScreen = ({ navigation }) => {
   const [controller, dispatch] = useMyContextController();
   const { userLogin } = controller;
   const [favorites, setFavorites] = useState([]);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   useEffect(() => {
     // Truy vấn danh sách dịch vụ từ Firestore
@@ -63,6 +64,93 @@ const HomeScreen = ({ navigation }) => {
     );
     setFilteredServices(filteredList);
   };
+
+  const toggleDropdownPrice = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
+  const toggleDropdownClassify = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
+  const toggleDropdownSubject = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
+
+  const handleMenuItemPressClassify = async (menuItem) => {
+  try {
+    // Thực hiện truy vấn dữ liệu từ Firestore dựa trên menuItem
+    const querySnapshot = await firestore()
+      .collection('services')
+      .where('classify', '==', menuItem)
+      .get();
+
+    // Lấy dữ liệu từ querySnapshot và cập nhật state
+    const servicesList = [];
+    querySnapshot.forEach((documentSnapshot) => {
+      servicesList.push({
+        id: documentSnapshot.id,
+        ...documentSnapshot.data(),
+      });
+    });
+    setFilteredServices(servicesList);
+  } catch (error) {
+    console.error('Error fetching services:', error);
+  }
+};
+
+const handleMenuItemPressSubject = async (menuItem) => {
+  try {
+    // Thực hiện truy vấn dữ liệu từ Firestore dựa trên menuItem
+    const querySnapshot = await firestore()
+      .collection('services')
+      .where('subject', '==', menuItem)
+      .get();
+
+    // Lấy dữ liệu từ querySnapshot và cập nhật state
+    const servicesList = [];
+    querySnapshot.forEach((documentSnapshot) => {
+      servicesList.push({
+        id: documentSnapshot.id,
+        ...documentSnapshot.data(),
+      });
+    });
+    setFilteredServices(servicesList);
+  } catch (error) {
+    console.error('Error fetching services:', error);
+  }
+};
+
+const handleMenuItemPressPrice = async (minPrice, maxPrice) => {
+  try {
+    // Thực hiện truy vấn dữ liệu từ Firestore dựa trên mức giá
+    const querySnapshot = await firestore()
+      .collection('services')
+      .where('description', '>=', minPrice)
+      .where('description', '<=', maxPrice)
+      .get();
+
+    // Lấy dữ liệu từ querySnapshot và cập nhật state
+    const servicesList = [];
+    querySnapshot.forEach((documentSnapshot) => {
+      servicesList.push({
+        id: documentSnapshot.id,
+        ...documentSnapshot.data(),
+      });
+    });
+    setFilteredServices(servicesList);
+  } catch (error) {
+    console.error('Error fetching services:', error);
+  }
+};
+  const handleFilterByPrice = (price) => {
+    const filteredList = services.filter((item) => {
+      // Lọc dịch vụ dựa trên giá
+      // Giả sử mỗi dịch vụ có một trường "price"
+      return item.price === price;
+    });
+    setFilteredServices(filteredList);
+  };
+  
+
 
   const addToCart = (service) => {
     if (!selectedServices.some((selectedService) => selectedService.id === service.id)) {
@@ -136,7 +224,7 @@ const HomeScreen = ({ navigation }) => {
 
         {/* Search input */}
         <View style={styles.searchContainer}>
-          <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+          <Icon name="search" size={20} color="#666" style={styles.searchIcon1} />
           <TextInput
             style={styles.searchInput}
             placeholder="Tìm kiếm sản phẩm..."
@@ -144,6 +232,47 @@ const HomeScreen = ({ navigation }) => {
             onChangeText={(text) => setSearchTerm(text)}
           />
         </View>
+
+        
+      
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10,}}>
+          <TouchableOpacity onPress={toggleDropdownPrice} style={styles.dropdownToggle}><Text>Lọc theo giá</Text></TouchableOpacity>
+          {isDropdownVisible && (
+              <View style={styles.dropdownMenu3}>
+                <TouchableOpacity onPress={() => handleMenuItemPressPrice(100000, 200000)}>
+                  <Text style={styles.dropdownMenuItem}>100-200k</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleMenuItemPressPrice(200000, 400000)}>
+                  <Text style={styles.dropdownMenuItem}>200-400k</Text>
+                </TouchableOpacity>
+              </View>
+          )}
+          <TouchableOpacity onPress={toggleDropdownClassify} style={styles.dropdownToggle}><Text>Theo chất liệu</Text></TouchableOpacity>
+          {isDropdownVisible && (
+              <View style={styles.dropdownMenu1}>
+                <TouchableOpacity onPress={() => handleMenuItemPressClassify('Hoa sáp')}>
+                  <Text style={styles.dropdownMenuItem}>Hoa sáp</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleMenuItemPressClassify('Hoa tiền')}>
+                  <Text style={styles.dropdownMenuItem}>Hoa tiền</Text>
+                </TouchableOpacity>
+              </View>
+          )}
+          <TouchableOpacity onPress={toggleDropdownSubject} style={styles.dropdownToggle}><Text>Theo chủ đề</Text></TouchableOpacity>
+          {isDropdownVisible && (
+              <View style={styles.dropdownMenu2}>
+                <TouchableOpacity onPress={() => handleMenuItemPressSubject('Giáng sinh')}>
+                  <Text style={styles.dropdownMenuItem}>Giáng sinh</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleMenuItemPressSubject('Sinh nhật')}>
+                  <Text style={styles.dropdownMenuItem}>Sinh nhật</Text>
+                </TouchableOpacity>
+              </View>
+          )}
+        </View>
+
+     
+ 
 
         <Text style={styles.title1}>Danh sách sản phẩm</Text>
         <FlatList
@@ -235,6 +364,7 @@ const Customer = () => {
     </Tab.Navigator>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -268,11 +398,16 @@ const styles = StyleSheet.create({
     paddingLeft: 32,
     color: '#666',
   },
-  searchIcon: {
+  searchIcon1: {
     position: 'relative',
     top: 28,
     left: 10,
     zIndex: 2,
+  },
+  searchIcon2: {
+    top: -45,
+    left: 340,
+
   },
   serviceItem: {
     marginBottom: 12,
@@ -322,6 +457,53 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 8,
   },
+  dropdownToggle: {
+    height: 40,
+    borderColor: 'white',
+    borderWidth: 1,
+    backgroundColor: 'white',
+    paddingLeft: 32,
+    color: '#666',
+  
+  },
+  dropdownToggleText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'darkslateblue',
+  },
+  dropdownMenu1: {
+    position: 'absolute',
+    top: 20, // vị trí menu dropdown so với button
+    left: 150,
+    backgroundColor: 'gray',
+    borderRadius: 5,
+    elevation: 3,
+    padding: 10,
+  },
+  dropdownMenu2: {
+    position: 'absolute',
+    top: 20, // vị trí menu dropdown so với button
+    right: 20,
+    backgroundColor: 'gray',
+    borderRadius: 5,
+    elevation: 3,
+    padding: 10,
+  },
+  dropdownMenu3: {
+    position: 'absolute',
+    top: 20, // vị trí menu dropdown so với button
+    left: 30,
+    backgroundColor: 'gray',
+    borderRadius: 5,
+    elevation: 3,
+    padding: 10,
+  },
+  dropdownMenuItem: {
+    fontSize: 16,
+    paddingVertical: 5,
+    color: 'black',
+  },
+  
 });
 
 export default Customer;
