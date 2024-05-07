@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ImageBackground, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ImageBackground, Image, TouchableOpacity, Alert } from 'react-native';
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { useNavigation } from '@react-navigation/native';
 import { useMyContextController } from '../context';
 import { ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth'; // Import thêm auth từ Firebase
 
 const ServiceDetail = ({ route }) => {
   const { service } = route.params;
@@ -12,9 +14,6 @@ const ServiceDetail = ({ route }) => {
   const { userLogin } = controller;
   const navigation = useNavigation();
   const [isFavorite, setIsFavorite] = useState(false);
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
   const renderAdminMenu = () => (
     <Menu style={styles.menu}>
       <MenuTrigger text="&#8942;" customStyles={triggerStyles} />
@@ -35,6 +34,60 @@ const ServiceDetail = ({ route }) => {
       </MenuOptions>
     </Menu>
   );
+
+  // Định nghĩa hàm getCurrentUser để lấy người dùng hiện tại từ Firebase Authentication
+  const getCurrentUser = () => {
+    return auth().currentUser;
+  };
+
+  // Xác định trạng thái yêu thích của dịch vụ hiện tại
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      const user = getCurrentUser(); // Sử dụng hàm getCurrentUser để lấy người dùng hiện tại
+      if (!user) return;
+
+      const userEmail = user.email;
+      if (!userEmail) return;
+
+      const userDocRef = firestore().collection('USERS').doc(userEmail);
+      const userDoc = await userDocRef.get();
+
+      if (!userDoc.exists) return;
+
+      const userFavorites = userDoc.data()?.favorites || [];
+      setIsFavorite(userFavorites.some(fav => fav.id === service.id));
+    };
+
+    checkFavoriteStatus();
+  }, []);
+
+  // Thêm hoặc xóa dịch vụ khỏi danh sách yêu thích
+  const toggleFavorite = async () => {
+    const user = getCurrentUser();
+    if (!user) return;
+
+    const userEmail = user.email;
+    if (!userEmail) return;
+
+    const userDocRef = firestore().collection('USERS').doc(userEmail);
+    const userDoc = await userDocRef.get();
+
+    if (!userDoc.exists) {
+      await userDocRef.set({ favorites: [] });
+    }
+
+    const userFavorites = userDoc.data()?.favorites || [];
+
+    if (isFavorite) {
+      const updatedFavorites = userFavorites.filter(fav => fav.id !== service.id);
+      await userDocRef.update({ favorites: updatedFavorites });
+    } else {
+      const updatedFavorites = [...userFavorites, service];
+      await userDocRef.update({ favorites: updatedFavorites });
+    }
+
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <ImageBackground source={require('../images/white.jpg')} style={styles.backgroundImage}>
@@ -69,7 +122,6 @@ const ServiceDetail = ({ route }) => {
     </ImageBackground>
   );
 };
-
 const triggerStyles = {
   triggerText: {
     fontSize: 30,
@@ -85,7 +137,6 @@ const menuOptionStyles = {
     color: 'white',
   },
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -115,9 +166,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
-  menu: {
-    marginRight: -4,
-    top:-1,
+  favoriteContainer: {
+    padding: 8,
+  },
+  favoriteIcon: {
+    fontSize: 24,
   },
   infoContainer: {
     marginBottom: 12,
