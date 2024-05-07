@@ -1,4 +1,4 @@
-// FavoritesScreen.js
+// FavoritesScreen
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';

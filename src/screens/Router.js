@@ -20,7 +20,6 @@ import Pay from './Pay';
 import QRPay from './QRPay';
 import SignUp from './SignUp';
 import ForgetPass from './ForgetPass';
-//import AdminChat from './AdminChat';
 import FavoritesScreen from './FavoritesScreen';
 
 const Stack = createStackNavigator();

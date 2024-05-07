@@ -1,4 +1,4 @@
-// BottomTabBar.js
+// BottomTabBar
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
