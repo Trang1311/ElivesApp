@@ -13,6 +13,8 @@ import FavoritesScreen from './FavoritesScreen';
 import User from './User';
 import Tracking from './Tracking';
 import BottomTabBar from './BottomTabBar';
+import { Alert } from 'react-native';
+
 const Tab = createBottomTabNavigator();
 
 const getCurrentUser = () => {
@@ -27,6 +29,8 @@ const HomeScreen = ({ navigation }) => {
   const { userLogin } = controller;
   const [favorites, setFavorites] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [forceUpdate, setForceUpdate] = useState(false);
 
   useEffect(() => {
     // Truy vấn danh sách dịch vụ từ Firestore
@@ -313,6 +317,9 @@ const handleMenuItemPressPrice = async (minPrice, maxPrice) => {
             </TouchableOpacity>
           )}
         />
+        <TouchableOpacity style={styles.cartButton} onPress={navigateToCartScreen}>
+        <FontAwesome name="shopping-cart" size={24} color="white" />
+      </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -503,7 +510,17 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     color: 'black',
   },
-  
+  cartButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    width: 50,
+    height: 50,
+    backgroundColor: '#ff66b2',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default Customer;
