@@ -153,17 +153,50 @@ const handleMenuItemPressPrice = async (minPrice, maxPrice) => {
     });
     setFilteredServices(filteredList);
   };
+  // Trong hàm addToCart:
+
+  const addToCart = async (service) => {
+    try {
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        console.error('No user logged in.');
+        return;
+      }
   
-
-
-  const addToCart = (service) => {
-    if (!selectedServices.some((selectedService) => selectedService.id === service.id)) {
-      setSelectedServices([...selectedServices, service]);
-      Alert.alert('Thành công', 'Dịch vụ đã được thêm vào giỏ hàng');
-    } else {
-      Alert.alert('Thông báo', 'Dịch vụ đã tồn tại trong giỏ hàng.');
+      const userEmail = currentUser.email;
+      if (!userEmail) {
+        console.error('Email not found for the current user.');
+        return;
+      }
+  
+      const userDocRef = firestore().collection('USERS').doc(userEmail);
+      const userDoc = await userDocRef.get();
+  
+      if (!userDoc.exists) {
+        // Create a new document if the user does not exist in the "USERS" collection
+        await userDocRef.set({ cart: [] });
+      }
+  
+      const userCartRef = userDocRef.collection('cart');
+  
+      // Check if the product already exists in the cart
+      const existingProduct = await userCartRef.doc(service.id).get();
+      if (existingProduct.exists) {
+        // Product already exists, update the quantity
+        const currentQuantity = existingProduct.data().quantity || 0;
+        await userCartRef.doc(service.id).update({ quantity: currentQuantity + 1 });
+        Alert.alert('Thông báo', 'Sản phẩm đã tồn tại trong giỏ hàng.');
+      } else {
+        // Product does not exist, add it to the cart with initial quantity of 1
+        await userCartRef.doc(service.id).set({ ...service, quantity: 1 });
+        Alert.alert('Thành công', 'Dịch vụ đã được thêm vào giỏ hàng.');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      Alert.alert('Lỗi', 'Đã xảy ra lỗi khi thêm vào giỏ hàng.');
     }
   };
+  
 
   const navigateToCartScreen = () => {
     navigation.navigate('CartScreen', {
@@ -171,6 +204,8 @@ const handleMenuItemPressPrice = async (minPrice, maxPrice) => {
       setSelectedServices: setSelectedServices,
       reloadCart: reloadCartScreen,
       forceUpdateCart: forceUpdate,
+      getCurrentUser,
+
     });
   };
 

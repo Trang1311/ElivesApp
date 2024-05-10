@@ -2,79 +2,139 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, Image } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
 
+const getCurrentUser = () => {
+  return auth().currentUser;
+};
 
-const CartScreen = ({ route }) => {
-  const { selectedServices, setSelectedServices, reloadCart } = route.params;
+const CartScreen = () => {
   const navigation = useNavigation();
 
-  const [serviceQuantities, setServiceQuantities] = useState(
-    Object.fromEntries(selectedServices.map((service) => [service.id, 1]))
-  );
-
-  const [totalPrice, setTotalPrice] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0); // Đảm bảo totalPrice được khởi tạo và cập nhật
 
   useEffect(() => {
-    setServiceQuantities(Object.fromEntries(selectedServices.map((service) => [service.id, 1])));
-    updateTotalPrice();
-  }, [selectedServices]);
-
-  const increaseQuantity = (serviceId) => {
-    setServiceQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [serviceId]: prevQuantities[serviceId] + 1,
-    }));
-    updateTotalPrice();
-  };
-
-  const decreaseQuantity = (serviceId) => {
-    setServiceQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [serviceId]: Math.max(prevQuantities[serviceId] - 1, 1),
-    }));
-    updateTotalPrice();
-  };
-
-  const updateTotalPrice = () => {
-    const newTotalPrice = selectedServices.reduce((total, service) => {
-      return total + service.description * serviceQuantities[service.id];
-    }, 0);
-    setTotalPrice(newTotalPrice);
-  };
-
-  const removeService = (serviceId) => {
-    const updatedServices = selectedServices.filter((service) => service.id !== serviceId);
-    setSelectedServices(updatedServices);
-
-    // Check if the cart is empty after removing the item
-    if (updatedServices.length === 0) {
-      // Reload the cart to update the UI
-      reloadCart();
-    } else {
-      updateTotalPrice();
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      console.error('No user logged in.');
+      return;
     }
+
+    const unsubscribe = firestore()
+      .collection('USERS')
+      .doc(currentUser.email)
+      .collection('cart')
+      .onSnapshot((querySnapshot) => {
+        const items = [];
+        let total = 0;
+        querySnapshot.forEach((doc) => {
+          const item = { id: doc.id, ...doc.data() };
+          items.push(item);
+          total += item.description * (item.quantity || 1);
+        });
+        setCartItems(items);
+        setTotalPrice(total); // Cập nhật totalPrice khi có sự thay đổi trong giỏ hàng
+      });
+
+    return () => unsubscribe();
+  }, []);
+
+
+  const increaseQuantity = async (cartItemId) => {
+    try {
+      console.log('Increase quantity for cart item:', cartItemId);
+  
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        console.error('No user logged in.');
+        return;
+      }
+  
+      const itemRef = firestore()
+        .collection('USERS')
+        .doc(currentUser.email)
+        .collection('cart')
+        .doc(cartItemId);
+  
+      const doc = await itemRef.get();
+      if (doc.exists) {
+        const currentQuantity = doc.data().quantity || 1;
+        console.log('Current quantity:', currentQuantity);
+        
+        await itemRef.update({ quantity: currentQuantity + 1 });
+        console.log('Quantity increased successfully!');
+      }
+    } catch (error) {
+      console.error('Error increasing quantity:', error);
+    }
+  };
+  
+  const decreaseQuantity = async (cartItemId) => {
+    try {
+      console.log('Decrease quantity for cart item:', cartItemId);
+  
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        console.error('No user logged in.');
+        return;
+      }
+  
+      const itemRef = firestore()
+        .collection('USERS')
+        .doc(currentUser.email)
+        .collection('cart')
+        .doc(cartItemId);
+  
+      const doc = await itemRef.get();
+      if (doc.exists) {
+        const currentQuantity = doc.data().quantity || 1;
+        console.log('Current quantity:', currentQuantity);
+  
+        if (currentQuantity > 1) {
+          await itemRef.update({ quantity: currentQuantity - 1 });
+          console.log('Quantity decreased successfully!');
+        } else {
+          console.log('Quantity is already at minimum.');
+        }
+      }
+    } catch (error) {
+      console.error('Error decreasing quantity:', error);
+    }
+  };
+  
+  const removeFromCart = (itemId) => {
+    firestore()
+      .collection('USERS')
+      .doc(getCurrentUser().email)
+      .collection('cart')
+      .doc(itemId)
+      .delete()
+      .then(() => {
+        console.log('Item removed from cart successfully!');
+      })
+      .catch((error) => {
+        console.error('Error removing item from cart:', error);
+      });
   };
 
   const handleCheckout = () => {
-    if (selectedServices.length === 0) {
-      // Show an alert if the cart is empty
+    if (cartItems.length === 0) {
       Alert.alert('Thông báo', 'Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm để thanh toán.');
     } else {
-      // Navigate to the checkout screen
-      navigation.navigate('YourCheckoutScreen', { selectedServices, totalPrice });
-;
+      navigation.navigate('YourCheckoutScreen', { cartItems, totalPrice });
     }
-    
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Giỏ hàng</Text>
-      {selectedServices.length === 0 ? (
+      {cartItems.length === 0 ? (
         <Text style={styles.emptyCartMessage}>Giỏ hàng trống</Text>
       ) : (
         <FlatList
-          data={selectedServices}
+          data={cartItems}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.cartItem}>
@@ -90,12 +150,12 @@ const CartScreen = ({ route }) => {
                   <TouchableOpacity onPress={() => decreaseQuantity(item.id)}>
                     <FontAwesome name="minus" size={10} color="blue" />
                   </TouchableOpacity>
-                  <Text style={styles.quantityText}>{serviceQuantities[item.id]}</Text>
+                  <Text style={styles.quantityText}>{item.quantity || 1}</Text>
                   <TouchableOpacity onPress={() => increaseQuantity(item.id)}>
                     <FontAwesome name="plus" size={10} color="blue" />
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => removeService(item.id)}>
+                <TouchableOpacity onPress={() => removeFromCart(item.id)}>
                   <FontAwesome name="trash-o" size={20} color="red" />
                 </TouchableOpacity>
               </View>
@@ -104,7 +164,7 @@ const CartScreen = ({ route }) => {
         />
       )}
       <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Tổng tiền: {totalPrice}.000 VND</Text>
+        <Text style={styles.totalText}>Tổng tiền: {totalPrice} VND</Text>
       </View>
       <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
         <Text style={styles.checkoutButtonText}>Thanh toán</Text>
