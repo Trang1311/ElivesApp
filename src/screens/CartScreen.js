@@ -123,10 +123,9 @@ const CartScreen = () => {
     if (cartItems.length === 0) {
       Alert.alert('Thông báo', 'Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm để thanh toán.');
     } else {
-      navigation.navigate('YourCheckoutScreen', { cartItems, totalPrice });
+      navigation.navigate('Bookings', { cartItems, totalPrice });
     }
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Giỏ hàng</Text>
