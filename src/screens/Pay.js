@@ -16,7 +16,7 @@ const Pay = ({ route }) => {
     if (useMomo) {
       setPaymentStatus('Đã thanh toán');
     } else {
-      setPaymentStatus('Thanh toán khi nhận hàng');
+      setPaymentStatus('Đang chờ xác nhận');
     }
 
     // Update the selected method

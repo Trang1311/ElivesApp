@@ -30,8 +30,7 @@ const ServiceDetail = ({ route }) => {
       <MenuTrigger text="&#8942;" customStyles={triggerStyles} />
       <MenuOptions>
         <MenuOption onSelect={() => navigation.navigate('Chat', { service })} text="Tư vấn" customStyles={menuOptionStyles} />
-        <MenuOption onSelect={() => navigation.navigate('Booking', { service })} text="Đặt lịch" customStyles={menuOptionStyles} />
-      </MenuOptions>
+        </MenuOptions>
     </Menu>
   );
 
