@@ -13,8 +13,7 @@ const CartScreen = () => {
   const navigation = useNavigation();
 
   const [cartItems, setCartItems] = useState([]);
-  const [totalPrice, setTotalPrice] = useState(0); // Đảm bảo totalPrice được khởi tạo và cập nhật
-
+  const [totalPrice, setTotalPrice] = useState(0); 
   useEffect(() => {
     const currentUser = getCurrentUser();
     if (!currentUser) {

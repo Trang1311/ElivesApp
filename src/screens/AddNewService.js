@@ -79,6 +79,12 @@ const AddNewService = ({ navigation }) => {
         value={serviceInfor}
         onChangeText={(text) => setServiceInfor(text)}
       />
+      <TextInput
+        style={styles.input}
+        placeholder="Phân Loại"
+        value={serviceInfor}
+        onChangeText={(text) => setServiceInfor(text)}
+      />
       <TouchableOpacity style={styles.selectImageButton} onPress={selectImage}>
         <Text style={styles.selectImageText}>Chọn hình ảnh</Text>
       </TouchableOpacity>
