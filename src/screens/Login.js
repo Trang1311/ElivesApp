@@ -51,21 +51,19 @@ export default Login = ({ navigation }) => {
         theme={{ colors: { primary: "white", background: "white" } }}
       />
       <TextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          style={{ margin: 10, paddingRight: 30 }} // Đảm bảo có đủ khoảng trống cho IconButton
-          mode="outlined"
-          theme={{ colors: { primary: 'white', background: 'white' } }}
-        />
-        <IconButton
-          icon={showPassword ? 'eye-off' : 'eye'}
-          color="black"
-          size={20}
-          style={{ position: 'absolute', top: 305, right: 10 }} // Điều chỉnh vị trí của IconButton
-          onPress={() => setShowPassword(!showPassword)}
-        />
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={!showPassword}
+        style={{ margin: 10 }}
+        right={
+          <TextInput.Icon
+            icon={showPassword ? "eye-off" : "eye"}
+            onPress={() => setShowPassword(!showPassword)}
+          />
+        }
+        mode="outlined"
+      />
         <Button
         mode="contained-tonal"
         onPress={onSubmit}
