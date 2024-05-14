@@ -189,7 +189,7 @@ const handleMenuItemPressPrice = async (minPrice, maxPrice) => {
       } else {
         // Product does not exist, add it to the cart with initial quantity of 1
         await userCartRef.doc(service.id).set({ ...service, quantity: 1 });
-        Alert.alert('Thành công', 'Dịch vụ đã được thêm vào giỏ hàng.');
+        Alert.alert('Thành công', 'Sản phẩm đã được thêm vào giỏ hàng.');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
